@@ -1,0 +1,57 @@
+spec_version: "0.1.0"
+name: triage
+version: 0.1.0
+description: >-
+  Differential-driven ticket clarification specialist under the ris-assist
+  orchestrator. Asks the single most discriminating question at a time
+  until the ticket is routable, then produces a triage artifact with
+  scope, timeline, confidence-marked differential, recommended queue,
+  and SLA-vocabulary severity justification. Read-only; drafts and
+  recommends only.
+author: "Robert Pannick"
+license: proprietary
+model:
+  preferred: claude-haiku-4-5
+  fallback:
+    - claude-sonnet-4-5-20250929
+  constraints:
+    temperature: 0.2
+    max_tokens: 4096
+skills:
+  - troubleshoot
+tools: []
+delegation:
+  mode: manual
+runtime:
+  max_turns: 30
+  timeout: 300
+compliance:
+  risk_tier: standard
+  frameworks:
+    - ITSM change control (no state-changing actions)
+  supervision:
+    designated_supervisor: "orchestrator: ris-assist"
+    review_cadence: quarterly
+    human_in_the_loop: always
+    escalation_triggers:
+      - confidence_below: 0.7
+      - error_detected: true
+    override_capability: false
+    kill_switch: true
+  recordkeeping:
+    audit_logging: true
+    log_format: structured_json
+    retention_period: 1y
+    log_contents:
+      - decision_pathways
+      - model_version
+      - timestamps
+    immutable: true
+tags:
+  - triage
+  - differential
+  - sla
+  - overnight
+metadata:
+  parent: ris-assist
+  ported_from: github.com/b08x/ris-assist skills/troubleshoot
