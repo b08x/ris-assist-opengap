@@ -1,2 +1,7 @@
 log_level: info
 compliance_mode: true
+# Site and comms profiles are runtime inputs at user-confirmed paths
+# OUTSIDE this repo. Ask for the path at runtime; never search the
+# filesystem, never commit profile content.
+site_profile_path: null
+comms_profile_path: null

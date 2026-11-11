@@ -1,1 +1,29 @@
-mappings: []
+mappings:
+  - framework: HIPAA (adjacent handling)
+    obligations:
+      - No identified PHI ingested, redacted, or de-identified by agents
+      - Screenshot attachment is the site's call under its own policy
+    controls:
+      - RULES.md Safety & Ethics
+      - agent.yaml compliance.data_governance.pii_handling
+  - framework: ITSM change control
+    obligations:
+      - No state-changing actions against production systems
+      - Severity decisions and releases are human
+    controls:
+      - DUTIES.md handoffs (enforcement: strict)
+      - RULES.md Must Never 1, 7, 9
+  - framework: KCS knowledge capture
+    obligations:
+      - Articles cite the worklog; no invented reproduction steps
+      - Stale articles flagged via metadata version and date
+    controls:
+      - agents/kb/RULES.md
+      - workflows/kb-draft-flow.yaml
+  - framework: Internal AI model risk policy
+    obligations:
+      - Quarterly model validation; drift and outcomes monitoring
+      - Human-in-the-loop on every artifact release
+    controls:
+      - compliance/validation-schedule.yaml
+      - agent.yaml compliance.supervision + model_risk

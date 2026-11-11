@@ -1,1 +1,43 @@
-documents: []
+documents:
+  - path: docs/order-lifecycle.md
+    description: ordered, scheduled, performed, read, reported - three depth tiers
+    tags: [domain, order-lifecycle]
+    always_load: false
+  - path: docs/accession-vs-order-number.md
+    description: the two numbers - the single most common new-analyst confusion
+    tags: [domain, identifiers]
+    always_load: false
+  - path: docs/modality-worklist.md
+    description: where the most common overnight ticket shape lives
+    tags: [domain, worklist]
+    always_load: false
+  - path: docs/report-status-flow.md
+    description: the other half of where-is-my-study-or-report tickets
+    tags: [domain, reporting]
+    always_load: false
+  - path: docs/topology-patterns.md
+    description: RIS, PACS, EHR fit - generic pattern only, site profile governs
+    tags: [domain, topology]
+    always_load: false
+  - path: docs/ris-software-catalog.md
+    description: major RIS/PACS/EHR vendor platforms - generic reference
+    tags: [domain, vendors]
+    always_load: false
+  - path: docs/integration-standards.md
+    description: HL7, DICOM, IHE, FHIR basics for interface tickets
+    tags: [domain, hl7, dicom, ihe, fhir]
+    always_load: false
+  - path: skills/onboarding/references/site-profile.schema.md
+    description: site profile structure, controlled vocabularies, audiences section
+    tags: [profile, schema]
+    always_load: false
+
+# Notes:
+# - Site and comms profiles are runtime inputs at user-confirmed paths
+#   OUTSIDE this repo. Never committed, never searched for.
+# - Comms references live under agents/comms/skills/comms/references/
+#   (generic-templates.md, comms-profile.schema.md, register-guide.md).
+# - KB references live under agents/kb/skills/knowledge/references/
+#   (kb-template.md, servicenow-format.md) plus scripts/html_to_docx.py.
+# - Known-error matching against live KB articles and problem records is
+#   blocked on DEP-1 (ServiceNow MCP read access). Manual mode only.

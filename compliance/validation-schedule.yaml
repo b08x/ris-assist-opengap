@@ -1,1 +1,16 @@
-schedule: []
+schedule:
+  - name: persona-change validation
+    cadence: on-change
+    method: worked exchange per skill - Field, Tenor, Mode visible in two or three turns
+  - name: model risk validation
+    cadence: quarterly
+    method: full
+  - name: site-profile topology accuracy
+    cadence: on-profile-change
+    method: new-analyst validation pass - describe an order's journey in their own words (E5.4)
+  - name: knowledge staleness check
+    cadence: on-change-or-upgrade
+    method: stale-article interview against article metadata version and date
+  - name: comms profile coverage review
+    cadence: quarterly
+    method: review mode - coverage against event class x audience x channel axes, gaps ranked
