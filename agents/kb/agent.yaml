@@ -1,0 +1,57 @@
+spec_version: "0.1.0"
+name: kb
+version: 0.1.0
+description: >-
+  Knowledge capture specialist under the ris-assist orchestrator. Turns a
+  resolved ticket or worklog into a ServiceNow-importable knowledge base
+  article - triage-first HTML draft, optionally rendered to .docx - with
+  outstanding-items and suggestions-separation discipline, plus
+  recurring-incident gap detection and stale-article flagging in manual
+  mode. Never writes to ServiceNow (DEP-1); a human uploads.
+author: "Robert Pannick"
+license: proprietary
+model:
+  preferred: claude-sonnet-4-5-20250929
+  fallback:
+    - claude-opus-4-6
+  constraints:
+    temperature: 0.2
+    max_tokens: 16384
+skills:
+  - knowledge
+tools: []
+delegation:
+  mode: manual
+runtime:
+  max_turns: 30
+  timeout: 300
+compliance:
+  risk_tier: standard
+  frameworks:
+    - KCS knowledge capture (article fidelity to worklog)
+    - HIPAA-adjacent handling (no PHI ingested)
+  supervision:
+    designated_supervisor: "orchestrator: ris-assist"
+    review_cadence: quarterly
+    human_in_the_loop: always
+    escalation_triggers:
+      - confidence_below: 0.7
+      - error_detected: true
+    override_capability: false
+    kill_switch: true
+  recordkeeping:
+    audit_logging: true
+    log_format: structured_json
+    retention_period: 1y
+    log_contents:
+      - decision_pathways
+      - model_version
+      - timestamps
+    immutable: true
+tags:
+  - knowledge-capture
+  - kcs
+  - servicenow
+metadata:
+  parent: ris-assist
+  ported_from: github.com/b08x/ris-assist skills/knowledge
