@@ -1,0 +1,77 @@
+name: comms-draft-flow
+description: >-
+  Notification drafting: resolve the variant key, select template, fill
+  slots from stated facts only, apply audience register, mark causal
+  claims, maintain incident continuity, hand off to human approval.
+triggers:
+  - downtime_alert
+  - incident_update
+  - all_clear
+  - vendor_ticket
+  - change_narrative
+  - shift_turnover
+
+inputs:
+  profile_path:
+    description: Site profile path (user-confirmed; never searched for).
+  comms_profile_path:
+    description: >-
+      Comms profile path, if one exists. If absent, use the generic
+      templates in agents/comms/skills/comms/references/, labelled
+      untuned, and offer the comms-config interview.
+
+steps:
+  resolve-variant:
+    agent: comms
+    description: >-
+      Resolve event class x audience x channel. Ask for any part the
+      user has not supplied - one question at a time.
+    inputs:
+      event_facts: ${{ trigger.event_text }}
+      comms_profile_path: ${{ inputs.comms_profile_path }}
+
+  select-template:
+    agent: comms
+    depends_on: [resolve-variant]
+    description: >-
+      Exact match, else nearest defined variant with the substitution
+      stated out loud, else generic reference template labelled untuned.
+    inputs:
+      variant_key: ${{ steps.resolve-variant.outputs.variant_key }}
+      comms_profile_path: ${{ inputs.comms_profile_path }}
+
+  fill-slots:
+    agent: comms
+    depends_on: [select-template]
+    description: >-
+      Stated facts only. Missing required slots get placeholder tokens
+      and land in the outstanding-items list. An ETA, cause, or impact
+      scope is never inferred. Causal claims marked confirmed/suspected.
+    inputs:
+      template: ${{ steps.select-template.outputs.template }}
+      event_facts: ${{ trigger.event_text }}
+
+  continuity:
+    agent: comms
+    depends_on: [fill-slots]
+    conditions:
+      - ${{ steps.resolve-variant.outputs.is_update == true }}
+    description: >-
+      Carry forward incident reference, original start time, previously
+      stated impact; require only the delta. A previously published fact
+      that changed is flagged as changed, never silently corrected.
+
+  handoff:
+    skill: approval-package
+    depends_on: [fill-slots, continuity]
+    description: >-
+      Surface the approval chain with the draft - never bypassed, never
+      assumed satisfied. Gate: notification_release (DUTIES.md).
+    inputs:
+      draft: ${{ steps.fill-slots.outputs.draft }}
+      outstanding_items: ${{ steps.fill-slots.outputs.outstanding_items }}
+      approval_chain: ${{ steps.fill-slots.outputs.approval_chain }}
+
+error_handling:
+  on_failure: ask_user
+  channel: conversation

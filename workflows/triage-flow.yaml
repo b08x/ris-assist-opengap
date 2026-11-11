@@ -1,0 +1,71 @@
+name: triage-flow
+description: >-
+  Differential-driven ticket clarification: one discriminating question at
+  a time until routable, then the triage artifact with severity
+  justification and an approval-gated handoff.
+triggers:
+  - new_ticket
+  - escalation_request
+
+inputs:
+  profile_path:
+    description: >-
+      Site profile path, confirmed by the user. Never searched for; if
+      unknown, run the onboarding skill or proceed generically and say so.
+
+steps:
+  classify:
+    skill: ticket-intake
+    description: Normalize ticket text; extract stated scope, timeline, symptoms.
+    inputs:
+      raw: ${{ trigger.ticket_text }}
+
+  site-context:
+    skill: site-profile-lookup
+    depends_on: [classify]
+    description: >-
+      Read-only lookup of systems, interfaces, identifier_formats,
+      sla_tiers, escalation_matrix, downtime_procedures.
+    inputs:
+      profile_path: ${{ inputs.profile_path }}
+    error_handling:
+      on_failure: proceed_generically
+      # "not in your site profile" - draft generically and say so
+
+  triage:
+    agent: triage
+    depends_on: [classify, site-context]
+    prompt: |
+      Ask the single most discriminating question at a time.
+      Night shift: ask the change-window question first - it inverts the
+      differential prior, and the prior still carries a likely/possible
+      mark. Experience is not a citable source.
+      Stop when routable, not when exhausted.
+    inputs:
+      ticket: ${{ steps.classify.outputs.normalized_ticket }}
+      site_context: ${{ steps.site-context.outputs.sections }}
+      operating_context: ${{ trigger.operating_context }}
+
+  severity:
+    agent: triage
+    depends_on: [triage]
+    conditions:
+      - ${{ steps.triage.outputs.routable == true }}
+    prompt: |
+      Justify severity in the site's own SLA vocabulary, citing
+      sla_tiers, or state that no matching tier exists. Workaround
+      existence is a judgment call for the human - flagged, not resolved.
+
+  handoff:
+    skill: approval-package
+    depends_on: [severity]
+    description: >-
+      Package triage artifact, severity justification, and dead-branch
+      reasoning for the human approver. Gate: severity_commit (DUTIES.md).
+    inputs:
+      artifact: ${{ steps.triage.outputs.artifact }}
+      severity: ${{ steps.severity.outputs.justification }}
+
+error_handling:
+  on_failure: ask_user
+  channel: conversation

@@ -1,0 +1,116 @@
+name: kb-draft-flow
+description: >-
+  Manual-mode knowledge capture: worklog as given, triage-ordered HTML
+  article, field checklist, one self-contained Word-openable file,
+  optional .docx render, suggestions separated, human approval before
+  upload.
+triggers:
+  - incident_resolved
+  - recurring_symptom
+  - stale_check
+
+inputs:
+  worklog:
+    description: >-
+      The worklog as given - paste, ticket text, or dictated summary. The
+      entire source; never supplemented from general knowledge.
+  profile_path:
+    description: Site profile path (user-confirmed; never searched for).
+  output_dir:
+    description: >-
+      Where the article file goes. User-stated, else the working
+      directory. Never inside this agent repo.
+  render_docx:
+    description: >-
+      True only when the user confirmed and an interpreter exists
+      (macOS/Linux/WSL path; not the Windows path).
+
+steps:
+  take-worklog:
+    skill: kb-intake
+    description: Accept the worklog as given. No supplementation, ever.
+    inputs:
+      raw: ${{ inputs.worklog }}
+
+  select-template:
+    agent: kb
+    depends_on: [take-worklog]
+    description: >-
+      Site article template from the profile if defined; else
+      agents/kb/skills/knowledge/references/kb-template.md, labelled
+      generic.
+    inputs:
+      worklog: ${{ steps.take-worklog.outputs.normalized }}
+      profile_path: ${{ inputs.profile_path }}
+
+  order-layers:
+    agent: kb
+    depends_on: [select-template]
+    description: >-
+      Scope first, then the differential-ordered layers - workstation/
+      user, application (RIS/PACS), interface, advanced. Carry only the
+      layers the worklog supports. An unsupported layer is omitted and
+      listed as outstanding - never an empty heading, never filled from
+      general knowledge.
+
+  draft-sections:
+    agent: kb
+    depends_on: [order-layers]
+    description: >-
+      Cause section confidence-marked explicitly. A worklog with no
+      cause in it gets "cause not established," not a mark on a guess.
+
+  field-checklist:
+    skill: kb-field-checklist
+    depends_on: [draft-sections]
+    description: >-
+      Run before presenting the draft as done. An item that can't be
+      filled is marked unknown in the draft, never silently dropped.
+
+  write-file:
+    tool: write-file
+    depends_on: [field-checklist]
+    description: >-
+      One self-contained HTML file opening with the Word header
+      (references/servicenow-format.md). Never invent an image src;
+      placeholders stay placeholders and are reported.
+    inputs:
+      content: ${{ steps.draft-sections.outputs.article_html }}
+      path: ${{ inputs.output_dir }}
+
+  render-docx:
+    tool: html-to-docx
+    depends_on: [write-file]
+    conditions:
+      - ${{ inputs.render_docx == true }}
+    description: >-
+      Optional one-step render via
+      agents/kb/skills/knowledge/scripts/html_to_docx.py (PEP 723; uv run
+      resolves python-docx and Pillow). Offer only after confirming an
+      interpreter exists.
+    inputs:
+      html_path: ${{ steps.write-file.outputs.path }}
+
+  separate-suggestions:
+    skill: kb-suggestions
+    depends_on: [write-file]
+    description: >-
+      Suggestions go in the response, never in the HTML and therefore
+      never in the .docx - merged content is indistinguishable from
+      recorded content once the file leaves the session.
+
+  handoff:
+    skill: approval-package
+    depends_on: [write-file, render-docx, separate-suggestions]
+    description: >-
+      Human approval before upload. The article is uploaded by a human;
+      connected ServiceNow mode stays behind DEP-1. Gate: kb_submission
+      (DUTIES.md).
+    inputs:
+      article_path: ${{ steps.write-file.outputs.path }}
+      docx_path: ${{ steps.render-docx.outputs.path }}
+      outstanding_items: ${{ steps.field-checklist.outputs.outstanding_items }}
+
+error_handling:
+  on_failure: ask_user
+  channel: conversation
