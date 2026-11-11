@@ -1,0 +1,57 @@
+spec_version: "0.1.0"
+name: comms
+version: 0.1.0
+description: >-
+  Incident communication drafting specialist under the ris-assist
+  orchestrator - downtime alerts, MIM cadence updates, vendor tickets,
+  change narratives, shift turnover - matched to audience register with
+  outstanding-items discipline, plus comms-profile tuning (capture /
+  build / edit / review). Drafts only; never sends, publishes, pages, or
+  posts.
+author: "Robert Pannick"
+license: proprietary
+model:
+  preferred: claude-haiku-4-5
+  fallback:
+    - claude-sonnet-4-5-20250929
+  constraints:
+    temperature: 0.2
+    max_tokens: 8192
+skills:
+  - comms
+tools: []
+delegation:
+  mode: manual
+runtime:
+  max_turns: 30
+  timeout: 300
+compliance:
+  risk_tier: standard
+  frameworks:
+    - ITSM change control (no state-changing actions)
+    - Incident communication pre-review (correspondence)
+  supervision:
+    designated_supervisor: "orchestrator: ris-assist"
+    review_cadence: quarterly
+    human_in_the_loop: always
+    escalation_triggers:
+      - confidence_below: 0.7
+      - error_detected: true
+    override_capability: false
+    kill_switch: true
+  recordkeeping:
+    audit_logging: true
+    log_format: structured_json
+    retention_period: 1y
+    log_contents:
+      - decision_pathways
+      - model_version
+      - timestamps
+    immutable: true
+tags:
+  - communications
+  - incident-management
+  - downtime
+metadata:
+  parent: ris-assist
+  ported_from: github.com/b08x/ris-assist skills/comms
