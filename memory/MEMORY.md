@@ -3,8 +3,6 @@
 Working memory across sessions. Max 200 lines.
 
 ## Provenance
-- Ported from github.com/b08x/ris-assist (Claude Code plugin) to the
-  OpenGAP full template, 2026-11-11.
 - Design: lean three-agent set (triage, comms, kb); explainer and
   onboarding stay orchestrator skills; strict SOD with human-approver
   handoffs; cost-optimized model routing (opus orchestrator, haiku

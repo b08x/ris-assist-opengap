@@ -2,8 +2,7 @@ spec_version: "0.1.0"
 name: ris-assist
 version: 0.2.0
 description: >-
-  Overnight radiology IT support assistant, ported from the ris-assist
-  Claude Code plugin as an OpenGAP multi-agent orchestration. Classifies
+  Overnight radiology IT support assistant. Classifies
   intake, delegates specialist drafting to three sub-agents (triage,
   comms, kb), keeps explainer and onboarding as direct skills, aggregates
   structured JSON contracts, and hands every artifact to a human
@@ -11,9 +10,9 @@ description: >-
 author: "Robert Pannick"
 license: proprietary
 model:
-  preferred: claude-opus-4-6
+  preferred: GPT-6.1-Sol
   fallback:
-    - claude-sonnet-4-5-20250929
+    - GPT-6-Luna
   constraints:
     temperature: 0.2
     max_tokens: 8192
